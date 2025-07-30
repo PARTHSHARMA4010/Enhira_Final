@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment Testing</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Test UPI Payment</h1>
+    <form id="payment-form">
+        <label for="upi_id">UPI ID:</label>
+        <input type="text" id="upi_id" name="upi_id" placeholder="e.g., example@upi" required>
+
+        <label for="amount">Amount (INR):</label>
+        <input type="number" id="amount" name="amount" placeholder="e.g., 100" required>
+
+        <label for="note">Payment Note:</label>
+        <input type="text" id="note" name="note" placeholder="e.g., Test Payment" required>
+
+        <button type="button" id="pay-button">Pay Now</button>
+    </form>
+
+    <script>
+        document.getElementById("pay-button").addEventListener("click", async () => {
+    const upiId = document.getElementById("upi_id").value;
+    const amount = document.getElementById("amount").value;
+    const note = document.getElementById("note").value;
+
+    // Validate input fields
+    if (!upiId || !amount || !note) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    try {
+        // Prepare the request body
+        const body = JSON.stringify({
+            amount: parseFloat(amount), // Ensure amount is a float
+            upi_id: upiId,             // Ensure UPI ID is a string
+            note: note                 // Ensure note is a string
+        });
+
+        // Step 1: Create a payment order via your FastAPI backend
+        const response = await fetch("http://127.0.0.1:8000/create-upi-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error Response:", errorData);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Backend Response:", data);
+
+        if (data.status === "success") {
+            // Step 2: Open Razorpay payment interface
+            const options = {
+                key: "rzp_test_mAY8UtzGSAtLzV", //Replace with your Razorpay Key ID
+                amount: data.amount * 100, // Amount in paise
+                currency: "INR",
+                name: "Enhira",
+                description: data.note,
+                order_id: data.order_id,
+                handler: function (response) {
+                    // Handle successful payment
+                    alert("Payment successful!");
+                    console.log("Payment Response:", response);
+                },
+                prefill: {
+                    contact: "9999999999",
+                    email: "test@example.com"
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } else {
+            alert("Failed to create payment order");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while processing the payment.");
+    }
+});
+
+    </script>
+</body>
+</html>
