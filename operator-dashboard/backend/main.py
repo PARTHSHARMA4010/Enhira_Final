@@ -102,9 +102,25 @@ def create_user(user: UserMaster, session=Depends(get_session)):
         session.refresh(user)
         logger.info(f"➕ Added user {user.fullusername}")
         return user
-    except Exception as e:
-        logger.error(f"❌ Failed to add user: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to add user: {e}")
+
+    except IntegrityError as exc:
+        session.rollback()          # never forget this!
+
+        msg = "Duplicate value"
+        # exc.orig is the underlying psycopg2 error; str() has the constraint
+        err_txt = str(exc.orig)
+
+        if "uq_user_mobileno" in err_txt:
+            msg = "Mobile number already exists"
+        elif "uq_user_aadhar" in err_txt:
+            msg = "Aadhar card already exists"
+        elif "uq_user_upi" in err_txt:
+            msg = "UPI ID already exists"
+
+        raise HTTPException(status_code=400, detail=msg)
+    # except Exception as e:
+    #     logger.error(f"❌ Failed to add user: {e}")
+    #     raise HTTPException(status_code=500, detail=f"Failed to add user: {e}")
 
 # ---------- Upload CSV Endpoint -----------------------------
 @app.post("/upload-csv")
