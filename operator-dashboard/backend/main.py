@@ -358,7 +358,7 @@ def run_query(query_request: QueryRequest):
         where_clause = " AND ".join(where_clauses) if where_clauses else "1=1"
         sort_clause = f"ORDER BY {query_request.sort_by} {query_request.sort_order}" if query_request.sort_by else ""
 
-        sql_query = f"SELECT {fields} FROM usermaster WHERE {where_clause} {sort_clause};"
+        sql_query = f"SELECT {fields} FROM usermaster_copy WHERE {where_clause} {sort_clause};"
 
         with engine.connect() as connection:
             result = connection.execute(text(sql_query)).mappings()  # <- FIXED HERE

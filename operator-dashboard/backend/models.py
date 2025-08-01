@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Field
 from sqlalchemy import UniqueConstraint, Column, String
 
 class UserMaster(SQLModel, table=True):
-    __tablename__ = "usermaster"
+    __tablename__ = "usermaster_copy"
     # ① tell Postgres which columns must stay unique
     __table_args__ = (
         UniqueConstraint("mobileno",   name="uq_user_mobileno"),

@@ -15,7 +15,7 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <NavBar />
+        {/* <NavBar /> */}
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/add" element={<AddUser />} />

@@ -10,7 +10,7 @@ try:
     # Connect to the database
     with engine.connect() as connection:
         # Use SQLAlchemy's `text` to execute raw SQL queries
-        result = connection.execute(text("SELECT * FROM usermaster;"))
+        result = connection.execute(text("SELECT * FROM usermaster_copy;"))
         # Iterate through the results and print each row
         for row in result:
             print(row)
